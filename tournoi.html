@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Tournoi Mexicano</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230f172a'/%3E%3Ccircle cx='32' cy='40' r='10' fill='%23fff'/%3E%3Cpath d='M32 30 L24 8 L40 8 Z' fill='%233A9DA8'/%3E%3C/svg%3E">
+<style>
+  :root{--bg:#f1f5f9;--card:#fff;--ink:#1e293b;--mut:#94a3b8;--blue:#2563eb;--line:#e2e8f0;}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{margin:0;font-family:-apple-system,system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink);padding-bottom:84px;}
+  header{background:#0f172a;color:#fff;padding:12px 16px;position:sticky;top:0;z-index:10;}
+  header h1{margin:0;font-size:18px;}
+  header p{margin:2px 0 0;font-size:12px;color:#cbd5e1;}
+  .wrap{max-width:560px;margin:0 auto;padding:12px;}
+  .btn{width:100%;border:0;border-radius:12px;padding:14px;font-size:16px;font-weight:600;color:#fff;background:var(--blue);}
+  .btn:disabled{background:#cbd5e1;}
+  .hint{text-align:center;font-size:14px;color:var(--mut);margin:8px 0;}
+  .hint.warn{color:#d97706;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:12px;box-shadow:0 1px 2px rgba(0,0,0,.04);}
+  .rh{background:var(--blue);color:#fff;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;font-weight:600;}
+  .rh .lnk{color:#dbeafe;font-size:12px;text-decoration:underline;background:none;border:0;}
+  .rh .yes{background:#fff;color:#1d4ed8;border:0;border-radius:6px;padding:2px 8px;font-weight:600;font-size:12px;margin-left:6px;}
+  .court{padding:12px;border-top:1px solid #f1f5f9;}
+  .court:first-child{border-top:0;}
+  .terr{font-size:11px;color:var(--mut);margin-bottom:6px;}
+  .teams{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .team{text-align:left;border:1px solid var(--line);background:#f8fafc;border-radius:10px;padding:8px;font-size:14px;line-height:1.25;}
+  .team.win{background:#dcfce7;border-color:#22c55e;box-shadow:0 0 0 1px #22c55e inset;}
+  .team .lab{font-size:10px;font-weight:700;color:var(--mut);margin-bottom:2px;}
+  .star{color:#f59e0b;font-size:11px;}
+  .bench{padding:10px 12px;background:#fffbeb;font-size:13px;color:#92400e;}
+  .bench b{color:#b45309;}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:12px;}
+  .row{display:flex;gap:8px;}
+  input{flex:1;border:1px solid #cbd5e1;border-radius:10px;padding:10px;font-size:15px;}
+  .chip{font-size:14px;border-radius:10px;padding:8px 12px;border:1px solid var(--line);background:#f8fafc;color:var(--mut);}
+  .chip.on{background:#fef3c7;border-color:#f59e0b;color:#b45309;}
+  .add{background:var(--blue);color:#fff;border:0;border-radius:10px;padding:8px 16px;font-weight:600;}
+  .plist{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-top:12px;}
+  .pitem{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-top:1px solid #f1f5f9;}
+  .pitem:first-child{border-top:0;}
+  .mini{font-size:12px;border-radius:8px;padding:5px 9px;border:1px solid var(--line);background:#f8fafc;color:#cbd5e1;}
+  .mini.on{background:#fef3c7;border-color:#f59e0b;color:#b45309;}
+  .del{background:none;border:0;color:#cbd5e1;font-size:20px;padding:0 4px;}
+  table{width:100%;border-collapse:collapse;}
+  th,td{padding:9px 8px;font-size:14px;text-align:center;}
+  th{background:#f1f5f9;color:var(--mut);font-size:11px;}
+  td.nm{text-align:left;}
+  td.v{color:#16a34a;font-weight:700;}
+  tr:nth-child(even){background:#f8fafc;}
+  nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;max-width:560px;margin:0 auto;}
+  nav button{flex:1;border:0;background:none;padding:14px;font-size:14px;font-weight:500;color:var(--mut);}
+  nav button.act{color:var(--blue);}
+</style>
+</head>
+<body>
+<header><h1>Tournoi — Mexicano</h1><p id="sub"></p></header>
+<div class="wrap" id="view"></div>
+<nav id="nav"></nav>
+
+<script>
+const KEY="tournoi_pmbb_html_v1";
+const SEED=[["Océane","ANTY/JACOB"],["Antoine","JACOB"],["Elise","KARCHER"],["Thomas","LENORMANT"],
+["Elodie","MONNIN"],["Mahdi","FOURTI"],["Quentin","DARTIGEAS"],["Nicolas","LAVAUD"],["Alex","CHAREYRE"],
+["Cassandre","EVENO"],["Sergio","DA COSTA"],["Anne Sophie","PERRIER"],["Cerise","GUERET"],["Eric","COTTIN"],
+["Fabrice","BIBOLLET"],["Nathan","MONTEIL"]].map((p,i)=>({id:i+1,prenom:p[0],nom:p[1],comp:false}));
+
+let S={players:SEED.slice(),rounds:[],nextId:17};
+let tab="rondes", confirmDel=null, newComp=false;
+
+try{const raw=localStorage.getItem(KEY);if(raw){const d=JSON.parse(raw);S.players=d.players||SEED.slice();S.rounds=d.rounds||[];S.nextId=d.nextId||S.players.length+1;}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+const esc=s=>String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const pk=a=>[...a].sort((x,y)=>x-y).join("-");
+const nm=id=>{const p=S.players.find(p=>p.id===id);return p?p.prenom+" "+p.nom:"—";};
+const isC=id=>{const p=S.players.find(p=>p.id===id);return p&&p.comp;};
+
+function stats(){
+  const s={wins:{},losses:{},played:{},assigned:{},byes:{},used:new Set()};
+  S.players.forEach(p=>{s.wins[p.id]=0;s.losses[p.id]=0;s.played[p.id]=0;s.assigned[p.id]=0;s.byes[p.id]=0;});
+  S.rounds.forEach(rd=>{
+    rd.courts.forEach(ct=>{
+      [...ct.a,...ct.b].forEach(id=>{if(s.assigned[id]!=null)s.assigned[id]++;});
+      s.used.add(pk(ct.a));s.used.add(pk(ct.b));
+      if(ct.winner==="A"||ct.winner==="B"){
+        const w=ct.winner==="A"?ct.a:ct.b,l=ct.winner==="A"?ct.b:ct.a;
+        w.forEach(id=>{if(s.wins[id]!=null){s.wins[id]++;s.played[id]++;}});
+        l.forEach(id=>{if(s.losses[id]!=null){s.losses[id]++;s.played[id]++;}});
+      }
+    });
+    (rd.bench||[]).forEach(id=>{if(s.byes[id]!=null)s.byes[id]++;});
+  });
+  return s;
+}
+
+function genRound(){
+  const st=stats();
+  const benchN=S.players.length%4;
+  const bench=[...S.players].sort((p,q)=>{
+    if(st.assigned[q.id]!==st.assigned[p.id])return st.assigned[q.id]-st.assigned[p.id];
+    if(st.byes[p.id]!==st.byes[q.id])return st.byes[p.id]-st.byes[q.id];
+    return p.id-q.id;
+  }).slice(0,benchN).map(p=>p.id);
+  const bs=new Set(bench);
+  const playing=S.players.filter(p=>!bs.has(p.id));
+  const H=playing.length/2,NC=playing.length/4;
+  const idx={};S.players.forEach((p,i)=>idx[p.id]=i);
+  const sc={};playing.forEach(p=>sc[p.id]=st.wins[p.id]*1000+(p.comp?100:0)-idx[p.id]);
+  const seat=[...playing].sort((a,b)=>sc[b.id]-sc[a.id]).map(p=>p.id);
+  let best=null;
+  for(let off=0;off<H;off++){
+    let reuse=0;const tot=[],teams=[];
+    for(let i=1;i<=H;i++){
+      const w=H+(((H-i)+off)%H)+1;teams.push([i,w]);tot.push(i+w);
+      if(st.used.has(pk([seat[i-1],seat[w-1]])))reuse++;
+    }
+    const m=tot.reduce((a,b)=>a+b,0)/H,vc=tot.reduce((a,b)=>a+(b-m)*(b-m),0)/H;
+    if(!best||reuse<best.reuse||(reuse===best.reuse&&vc<best.vc))best={reuse,vc,teams};
+  }
+  const order=best.teams.map((t,i)=>({i,total:t[0]+t[1]})).sort((a,b)=>a.total-b.total).map(o=>o.i);
+  const courts=[];
+  for(let k=0;k<NC;k++){
+    const tA=best.teams[order[k]],tB=best.teams[order[H-1-k]];
+    courts.push({a:[seat[tA[0]-1],seat[tA[1]-1]],b:[seat[tB[0]-1],seat[tB[1]-1]],winner:null});
+  }
+  return {courts,bench};
+}
+
+function lastComplete(){
+  if(S.rounds.length===0)return true;
+  return S.rounds[S.rounds.length-1].courts.every(c=>c.winner==="A"||c.winner==="B");
+}
+
+/* actions */
+function generer(){if(S.players.length<4||!lastComplete())return;S.rounds.push(genRound());confirmDel=null;save();render();}
+function setWinner(ri,ci,w){const c=S.rounds[ri].courts[ci];c.winner=c.winner===w?null:w;save();render();}
+function askCancel(ri){confirmDel=ri;render();}
+function cancelCancel(){confirmDel=null;render();}
+function doCancel(ri){S.rounds.splice(ri,1);confirmDel=null;save();render();}
+function addPlayer(){
+  const pr=document.getElementById("np_p").value.trim(),no=document.getElementById("np_n").value.trim();
+  if(!pr&&!no)return;
+  S.players.push({id:S.nextId++,prenom:pr,nom:no,comp:newComp});newComp=false;save();render();
+}
+function toggleNewComp(){newComp=!newComp;const b=document.getElementById("np_c");b.className="chip"+(newComp?" on":"");b.textContent="★ Compétiteur "+(newComp?"oui":"non");}
+function toggleComp(id){const p=S.players.find(p=>p.id===id);p.comp=!p.comp;save();render();}
+function delPlayer(id){S.players=S.players.filter(p=>p.id!==id);save();render();}
+function go(t){tab=t;confirmDel=null;render();}
+
+/* views */
+function viewRondes(){
+  const lc=lastComplete(),few=S.players.length<4;
+  let h=`<button class="btn" ${(few||!lc)?"disabled":""} onclick="generer()">+ Générer la ronde ${S.rounds.length+1}</button>`;
+  if(few)h+=`<p class="hint">Ajoute au moins 4 joueurs.</p>`;
+  else if(!lc)h+=`<p class="hint warn">Termine tous les matchs de la ronde ${S.rounds.length} avant de générer la suivante.</p>`;
+  else if(S.rounds.length===0)h+=`<p class="hint">Aucune ronde. Lance la première.</p>`;
+  for(let ri=S.rounds.length-1;ri>=0;ri--){
+    const rd=S.rounds[ri];
+    h+=`<div class="card"><div class="rh"><span>Ronde ${ri+1}</span>`;
+    h+= confirmDel===ri
+      ? `<span>Annuler ? <button class="yes" onclick="doCancel(${ri})">Oui</button> <button class="lnk" onclick="cancelCancel()">Non</button></span>`
+      : `<button class="lnk" onclick="askCancel(${ri})">Annuler</button>`;
+    h+=`</div>`;
+    rd.courts.forEach((ct,ci)=>{
+      h+=`<div class="court"><div class="terr">Terrain ${ci+1}</div><div class="teams">`;
+      [["A",ct.a],["B",ct.b]].forEach(([side,team])=>{
+        const win=ct.winner===side;
+        h+=`<button class="team${win?" win":""}" onclick="setWinner(${ri},${ci},'${side}')">
+          <div class="lab">ÉQUIPE ${side}${win?" ✓":""}</div>
+          <div>${isC(team[0])?'<span class="star">★</span> ':''}${esc(nm(team[0]))}</div>
+          <div>${isC(team[1])?'<span class="star">★</span> ':''}${esc(nm(team[1]))}</div></button>`;
+      });
+      h+=`</div></div>`;
+    });
+    if(rd.bench&&rd.bench.length)h+=`<div class="bench"><b>En attente :</b> ${rd.bench.map(id=>esc(nm(id))).join(", ")}</div>`;
+    h+=`</div>`;
+  }
+  return h;
+}
+function viewJoueurs(){
+  let h=`<div class="panel"><div style="font-weight:600;font-size:14px;margin-bottom:8px;">Ajouter un joueur</div>
+   <div class="row"><input id="np_p" placeholder="Prénom"><input id="np_n" placeholder="Nom"></div>
+   <div class="row" style="margin-top:8px;justify-content:space-between;align-items:center;">
+     <button id="np_c" class="chip${newComp?' on':''}" onclick="toggleNewComp()">★ Compétiteur ${newComp?'oui':'non'}</button>
+     <button class="add" onclick="addPlayer()">Ajouter</button></div></div>`;
+  h+=`<div class="plist">`;
+  S.players.forEach(p=>{
+    h+=`<div class="pitem"><span>${esc(p.prenom+" "+p.nom)}</span><span>
+      <button class="mini${p.comp?' on':''}" onclick="toggleComp(${p.id})">★</button>
+      <button class="del" onclick="delPlayer(${p.id})">×</button></span></div>`;
+  });
+  h+=`</div><p class="hint" style="text-align:left;font-size:12px;">★ = compétiteur (tête de série). Un ajout entre dès la prochaine ronde.</p>`;
+  return h;
+}
+function viewClass(){
+  const st=stats();
+  const arr=S.players.map(p=>({nom:p.prenom+" "+p.nom,comp:p.comp,v:st.wins[p.id],d:st.losses[p.id],b:st.byes[p.id]}));
+  arr.sort((a,b)=>b.v-a.v||a.d-b.d);
+  let r=0,pv=null,pd=null,i=0;
+  let h=`<div class="card"><table><thead><tr><th>#</th><th style="text-align:left">Joueur</th><th>V</th><th>D</th><th>⏸</th></tr></thead><tbody>`;
+  arr.forEach(p=>{i++;if(p.v!==pv||p.d!==pd){r=i;pv=p.v;pd=p.d;}
+    h+=`<tr><td>${r}</td><td class="nm">${p.comp?'<span class="star">★</span> ':''}${esc(p.nom)}</td><td class="v">${p.v}</td><td>${p.d}</td><td>${p.b}</td></tr>`;});
+  h+=`</tbody></table><div style="padding:8px 12px;font-size:11px;color:var(--mut)">V victoires · D défaites · ⏸ tours en attente</div></div>`;
+  return h;
+}
+
+function render(){
+  document.getElementById("sub").textContent=`Équipes fort+faible · partenaires tournants · ${S.players.length} joueurs`;
+  document.getElementById("view").innerHTML= tab==="rondes"?viewRondes():tab==="joueurs"?viewJoueurs():viewClass();
+  document.getElementById("nav").innerHTML=[["rondes","Rondes"],["joueurs","Joueurs"],["classement","Classement"]]
+    .map(([k,l])=>`<button class="${tab===k?'act':''}" onclick="go('${k}')">${l}</button>`).join("");
+}
+render();
+</script>
+</body>
+</html>
