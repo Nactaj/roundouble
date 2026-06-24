@@ -50,6 +50,7 @@ function normalize(state) {
   Object.values(s.tournaments).forEach((t) => {
     t.settings = { ...DEFAULT_SETTINGS, ...(t.settings || {}) };
     t.players = t.players || [];
+    t.pairs = t.pairs || [];
     t.rounds = t.rounds || [];
     if (t.nextPlayerId == null) {
       t.nextPlayerId = t.players.reduce((m, p) => Math.max(m, p.id), 0) + 1;

@@ -4,6 +4,7 @@ import { getMode } from "../../modes/index.js";
 import { getState, ctxFor } from "../../state/store.js";
 import { esc } from "../escape.js";
 import { nameById } from "../../core/players.js";
+import { describeScoring } from "../../core/scoring.js";
 
 export function renderRondes(t) {
   const mode = getMode(t.modeId);
@@ -12,6 +13,7 @@ export function renderRondes(t) {
   const ui = getState().ui;
 
   let h = `<button class="btn" ${gate.ok ? "" : "disabled"} data-action="generer">+ Générer la ronde ${t.rounds.length + 1}</button>`;
+  h += `<p class="hint">${esc(describeScoring(t.settings))}</p>`;
   if (!gate.ok) h += `<p class="hint warn">${esc(gate.message || "")}</p>`;
   else if (t.rounds.length === 0) h += `<p class="hint">Aucune ronde. Lance la première.</p>`;
 

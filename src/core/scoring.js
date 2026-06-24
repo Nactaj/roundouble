@@ -1,29 +1,80 @@
 // Calcul des résultats à partir des scores saisis (sets), partagé par tous les modes.
 // Le vainqueur n'est JAMAIS stocké : il est dérivé des sets selon les réglages du tournoi.
 
-// Vainqueur d'un set : "A" | "B" | null (set incomplet ou égalité).
-export function setWinner(set) {
+// Formats de set proposés : score cible -> plafond de prolongation (2 pts d'écart).
+export const SCORE_FORMATS = [
+  { target: 11, cap: 15 },
+  { target: 15, cap: 21 },
+  { target: 21, cap: 30 }
+];
+const CAP_BY_TARGET = SCORE_FORMATS.reduce((m, f) => ((m[f.target] = f.cap), m), {});
+
+// Plafond d'un set pour le score cible choisi (fallback raisonnable hors presets).
+export function setCap(settings = {}) {
+  const max = settings.pointsMax || 21;
+  return CAP_BY_TARGET[max] || max + 9;
+}
+
+// Phrase récapitulative des réglages de score (affichée à la création et dans les rondes).
+export function describeScoring(settings = {}) {
+  const max = settings.pointsMax || 21;
+  const cap = setCap(settings);
+  const n = settings.setsCount || 1;
+  const need = Math.floor(n / 2) + 1;
+  const setsTxt = n === 1 ? "1 set sec" : `${n} sets — il faut en gagner ${need}`;
+  return `Sets en ${max} points (2 pts d'écart, max ${cap}) · ${setsTxt}`;
+}
+
+// Vainqueur d'un set : "A" | "B" | null.
+// Un set n'est décidé que lorsque le meneur atteint le score cible (pointsMax) avec au
+// moins 2 points d'écart, ou au plafond (prolongation). Tant que ce n'est pas le cas
+// (score trop bas, égalité, ou 1 seul point d'écart en prolongation), aucun vainqueur.
+export function setWinner(set, settings = {}) {
   if (!set) return null;
   const [a, b] = set;
   if (a == null || b == null || a === "" || b === "") return null;
-  if (Number(a) === Number(b)) return null;
-  return Number(a) > Number(b) ? "A" : "B";
+  const x = Number(a);
+  const y = Number(b);
+  if (Number.isNaN(x) || Number.isNaN(y) || x === y) return null;
+  const max = settings.pointsMax || 21;
+  const cap = setCap(settings);
+  const hi = Math.max(x, y);
+  const lo = Math.min(x, y);
+  if (hi < max) return null; // personne n'a atteint le score cible
+  if (hi - lo < 2 && hi < cap) return null; // prolongation : il faut 2 points d'écart
+  return x > y ? "A" : "B";
 }
 
-// Vainqueur d'un match (terrain) : "A" | "B" | null.
-// Best-of settings.setsCount : il faut remporter la majorité des sets.
-export function winnerOf(court, settings = {}) {
-  const need = Math.floor((settings.setsCount || 1) / 2) + 1;
-  let wa = 0;
-  let wb = 0;
+// Issue d'un match (terrain) : "A" | "B" | "draw" | null.
+// - "A"/"B" : a remporté la majorité des sets (best-of settings.setsCount).
+// - "draw"  : tous les sets sont joués mais à égalité (possible si setsCount est pair).
+// - null    : match encore en cours.
+export function matchOutcome(court, settings = {}) {
+  const total = settings.setsCount || 1;
+  const need = Math.floor(total / 2) + 1;
+  let sa = 0;
+  let sb = 0;
+  let decided = 0;
   for (const s of court.sets || []) {
-    const w = setWinner(s);
-    if (w === "A") wa += 1;
-    else if (w === "B") wb += 1;
+    const w = setWinner(s, settings);
+    if (w === "A") {
+      sa += 1;
+      decided += 1;
+    } else if (w === "B") {
+      sb += 1;
+      decided += 1;
+    }
   }
-  if (wa >= need) return "A";
-  if (wb >= need) return "B";
+  if (sa >= need) return "A";
+  if (sb >= need) return "B";
+  if (decided >= total) return "draw"; // tous les sets joués, score de sets à égalité
   return null;
+}
+
+// Vainqueur d'un match (terrain) : "A" | "B" | null (un nul renvoie null).
+export function winnerOf(court, settings = {}) {
+  const out = matchOutcome(court, settings);
+  return out === "A" || out === "B" ? out : null;
 }
 
 // Total de points marqués par chaque équipe sur le terrain : {A, B}.

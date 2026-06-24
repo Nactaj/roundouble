@@ -27,10 +27,11 @@
  * @typedef {Object} ModeOption  // un réglage saisi à la création du tournoi
  * @property {string} key
  * @property {string} label
- * @property {"number"} type
+ * @property {"number"|"select"} type
  * @property {number} default
  * @property {number=} min
  * @property {number=} max
+ * @property {Array<{value:number, label:string}>=} choices  // pour type "select"
  */
 
 /**

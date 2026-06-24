@@ -16,6 +16,6 @@ export function renderClassement(t) {
       .map((c) => `<td>${esc(r.cells[c])}</td>`)
       .join("")}</tr>`;
   });
-  h += `</tbody></table><div style="padding:8px 12px;font-size:11px;color:var(--mut)">V victoires · D défaites · +/- diff. de points · ⏸ tours en attente</div></div>`;
+  h += `</tbody></table><div style="padding:8px 12px;font-size:11px;color:var(--mut)">J matchs joués · V victoires · E égalités · D défaites · S diff. de sets · +/- diff. de points</div></div>`;
   return h;
 }

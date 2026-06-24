@@ -3,6 +3,7 @@
 import { load, save, defaultUi } from "./persistence.js";
 import { getMode } from "../modes/index.js";
 import { computeStats } from "../core/stats.js";
+import { setCap } from "../core/scoring.js";
 
 let state = load();
 const listeners = new Set();
@@ -31,6 +32,7 @@ export function ctxFor(t) {
     players: t.players,
     rounds: t.rounds,
     settings: t.settings,
+    pairs: t.pairs || [],
     stats: computeStats(t.players, t.rounds, t.settings)
   };
 }
@@ -48,7 +50,7 @@ export function setTab(tab) {
 }
 
 /* ---------- Actions : cycle de vie du tournoi ---------- */
-export function createTournament({ name, modeId, settings, players }) {
+export function createTournament({ name, modeId, settings, players, pairs }) {
   const id = genId();
   state.tournaments[id] = {
     id,
@@ -57,6 +59,7 @@ export function createTournament({ name, modeId, settings, players }) {
     settings,
     createdAt: Date.now(),
     players,
+    pairs: pairs || [],
     rounds: [],
     nextPlayerId: players.reduce((m, p) => Math.max(m, p.id), 0) + 1
   };
@@ -65,7 +68,18 @@ export function createTournament({ name, modeId, settings, players }) {
   commit();
 }
 
-export function closeTournament() {
+// Quitte le tournoi actif : on l'abandonne (suppression) et on revient à l'écran de
+// création. L'appelant (UI) aura au préalable recopié ses réglages dans le brouillon.
+export function discardActiveTournament() {
+  if (state.activeTournamentId) delete state.tournaments[state.activeTournamentId];
+  state.activeTournamentId = null;
+  state.ui = defaultUi();
+  commit();
+}
+
+// Remise à zéro complète : on efface tous les tournois et on repart d'un état vierge.
+export function resetAll() {
+  state.tournaments = {};
   state.activeTournamentId = null;
   state.ui = defaultUi();
   commit();
@@ -116,7 +130,22 @@ export function setScore(ri, ci, si, side, value) {
   if (!t) return;
   const ct = t.rounds[ri].courts[ci];
   if (!ct.sets[si]) ct.sets[si] = [null, null];
-  ct.sets[si][side === "A" ? 0 : 1] = value === "" ? null : Math.max(0, Number(value));
+  const set = ct.sets[si];
+  const idx = side === "A" ? 0 : 1;
+  if (value === "") {
+    set[idx] = null;
+    commit();
+    return;
+  }
+  // Borne contextuelle : on s'arrête au score cible, sauf prolongation (égalité à
+  // cible-1) où il faut 2 points d'écart, plafonné. Ex. en 15 pts, 21 n'est atteignable
+  // que face à 19 ou 20 — pas 21-2.
+  const target = t.settings.pointsMax || 21;
+  const cap = setCap(t.settings);
+  const other = set[idx === 0 ? 1 : 0];
+  const o = other == null ? 0 : Number(other);
+  const maxAllowed = o >= target - 1 ? Math.min(cap, o + 2) : target;
+  set[idx] = Math.min(maxAllowed, Math.max(0, Number(value)));
   commit();
 }
 

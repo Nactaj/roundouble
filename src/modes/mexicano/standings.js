@@ -3,28 +3,32 @@ import { fullName } from "../../core/players.js";
 
 export function computeStandings(ctx) {
   const st = ctx.stats;
+  const sign = (n) => (n > 0 ? "+" : "") + n;
   const arr = ctx.players.map((p) => ({
     playerId: p.id,
     name: fullName(p),
     comp: p.comp,
+    j: st.played[p.id],
     v: st.wins[p.id],
+    e: st.draws[p.id],
     d: st.losses[p.id],
-    byes: st.byes[p.id],
+    sets: st.setsWon[p.id] - st.setsLost[p.id], // différence de sets (peut être négative)
     diff: st.pf[p.id] - st.pa[p.id]
   }));
-  arr.sort((a, b) => b.v - a.v || a.d - b.d || b.diff - a.diff);
+  // Tri : victoires, puis différence de sets, puis différence de points.
+  arr.sort((a, b) => b.v - a.v || b.sets - a.sets || b.diff - a.diff);
 
   let rank = 0;
   let pv = null;
-  let pd = null;
+  let ps = null;
   let pdiff = null;
   let i = 0;
   return arr.map((p) => {
     i += 1;
-    if (p.v !== pv || p.d !== pd || p.diff !== pdiff) {
+    if (p.v !== pv || p.sets !== ps || p.diff !== pdiff) {
       rank = i;
       pv = p.v;
-      pd = p.d;
+      ps = p.sets;
       pdiff = p.diff;
     }
     return {
@@ -33,10 +37,12 @@ export function computeStandings(ctx) {
       comp: p.comp,
       rank,
       cells: {
+        J: p.j,
         V: p.v,
+        E: p.e,
         D: p.d,
-        "+/-": (p.diff > 0 ? "+" : "") + p.diff,
-        "⏸": p.byes
+        S: sign(p.sets),
+        "+/-": sign(p.diff)
       }
     };
   });

@@ -6,8 +6,9 @@ const TABS = [
 ];
 
 export function renderNav(active) {
-  return TABS.map(
+  const tabs = TABS.map(
     ([k, l]) =>
       `<button class="${active === k ? "act" : ""}" data-action="tab" data-tab="${k}">${l}</button>`
   ).join("");
+  return `${tabs}<button class="quit" data-action="closeTournament" title="Quitter le tournoi">⨉</button>`;
 }

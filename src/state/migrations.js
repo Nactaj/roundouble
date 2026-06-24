@@ -8,9 +8,11 @@ const DEFAULT_SETTINGS = { pointsMax: 21, setsCount: 1 };
 
 // Convertit l'ancienne sauvegarde monolithe { players, rounds, nextId }
 // (clé localStorage "tournoi_pmbb_html_v1") en état v2 à un seul tournoi.
-// Les anciennes rondes stockaient un `winner` booléen "A"/"B" ; on le préserve
-// en synthétisant un set minimal [[1,0]] / [[0,1]] pour que winnerOf() le retrouve.
+// Les anciennes rondes stockaient un `winner` booléen "A"/"B" ; on le préserve en
+// synthétisant un set au score cible ([[pointsMax,0]] / [[0,pointsMax]]) pour que
+// winnerOf() le retrouve (un set n'est gagné qu'en atteignant pointsMax).
 export function legacyToV2(legacy) {
+  const pm = DEFAULT_SETTINGS.pointsMax;
   const players = (legacy.players || []).map((p) => ({
     id: p.id,
     prenom: p.prenom || "",
@@ -21,7 +23,7 @@ export function legacyToV2(legacy) {
     courts: (rd.courts || []).map((ct) => ({
       a: ct.a,
       b: ct.b,
-      sets: ct.winner === "A" ? [[1, 0]] : ct.winner === "B" ? [[0, 1]] : []
+      sets: ct.winner === "A" ? [[pm, 0]] : ct.winner === "B" ? [[0, pm]] : []
     })),
     bench: rd.bench || []
   }));

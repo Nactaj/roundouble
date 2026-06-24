@@ -7,6 +7,7 @@ header p{margin:2px 0 0;font-size:12px;color:#cbd5e1;}
 .wrap{max-width:560px;margin:0 auto;padding:12px;}
 .btn{width:100%;border:0;border-radius:12px;padding:14px;font-size:16px;font-weight:600;color:#fff;background:var(--blue);}
 .btn:disabled{background:#cbd5e1;}
+.btn-reset{width:100%;margin-top:8px;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:14px;font-weight:600;color:#dc2626;background:#fff;}
 .hint{text-align:center;font-size:14px;color:var(--mut);margin:8px 0;}
 .hint.warn{color:#d97706;}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:12px;box-shadow:0 1px 2px rgba(0,0,0,.04);}
@@ -45,6 +46,7 @@ tr:nth-child(even){background:#f8fafc;}
 nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;max-width:560px;margin:0 auto;}
 nav button{flex:1;border:0;background:none;padding:14px;font-size:14px;font-weight:500;color:var(--mut);}
 nav button.act{color:var(--blue);}
+nav button.quit{flex:0 0 auto;color:#dc2626;font-size:18px;padding:14px 18px;}
 
 /* --- Saisie des scores --- */
 .sets{margin-top:8px;display:flex;flex-direction:column;gap:6px;}
@@ -59,6 +61,14 @@ nav button.act{color:var(--blue);}
 .fld label{font-size:12px;color:var(--mut);font-weight:600;}
 .opts{display:flex;gap:8px;margin-top:10px;}
 .opts .fld{flex:1;}
+.choices{display:flex;gap:6px;flex-wrap:wrap;}
+.choices .chip{cursor:pointer;}
+.pairs{display:flex;flex-direction:column;gap:6px;margin-top:6px;}
+.pairrow{display:flex;align-items:center;gap:8px;}
+.pairrow .pnum{width:18px;color:var(--mut);font-size:12px;font-weight:600;}
+.pchip{flex:1;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#f8fafc;font-size:14px;cursor:pointer;}
+.pchip.on{background:#dbeafe;border-color:var(--blue);color:#1e40af;}
+.draw{margin-top:8px;text-align:center;font-size:13px;font-weight:600;color:var(--mut);}
 .modes{display:flex;flex-direction:column;gap:8px;}
 .modecard{text-align:left;border:1px solid var(--line);background:#f8fafc;border-radius:10px;padding:10px 12px;}
 .modecard.on{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue) inset;background:#eff6ff;}
