@@ -130,22 +130,10 @@ export function setScore(ri, ci, si, side, value) {
   if (!t) return;
   const ct = t.rounds[ri].courts[ci];
   if (!ct.sets[si]) ct.sets[si] = [null, null];
-  const set = ct.sets[si];
-  const idx = side === "A" ? 0 : 1;
-  if (value === "") {
-    set[idx] = null;
-    commit();
-    return;
-  }
-  // Borne contextuelle : on s'arrête au score cible, sauf prolongation (égalité à
-  // cible-1) où il faut 2 points d'écart, plafonné. Ex. en 15 pts, 21 n'est atteignable
-  // que face à 19 ou 20 — pas 21-2.
-  const target = t.settings.pointsMax || 21;
+  // Saisie libre, bornée seulement au plafond du format (ex. 21 en 15 points) : on
+  // n'entrave pas la frappe. La validité du set (vainqueur) est dérivée par setWinner.
   const cap = setCap(t.settings);
-  const other = set[idx === 0 ? 1 : 0];
-  const o = other == null ? 0 : Number(other);
-  const maxAllowed = o >= target - 1 ? Math.min(cap, o + 2) : target;
-  set[idx] = Math.min(maxAllowed, Math.max(0, Number(value)));
+  ct.sets[si][side === "A" ? 0 : 1] = value === "" ? null : Math.min(cap, Math.max(0, Number(value)));
   commit();
 }
 

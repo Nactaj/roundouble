@@ -1,7 +1,7 @@
 // Rendu d'un terrain : équipes (surlignage du vainqueur dérivé) + saisie des scores par set.
 import { esc } from "../escape.js";
 import { nameById, isComp } from "../../core/players.js";
-import { matchOutcome, setWinner, setCap } from "../../core/scoring.js";
+import { matchOutcome, setWinner, setCap, setMessage } from "../../core/scoring.js";
 
 export function renderCourt(t, ri, ci) {
   const ct = t.rounds[ri].courts[ci];
@@ -38,10 +38,11 @@ export function renderCourt(t, ri, ci) {
     const s = ct.sets[si] || [null, null];
     const inp = (side, val) =>
       `<input class="score" type="number" inputmode="numeric" min="0" max="${cap}" value="${val ?? ""}" data-action="score" data-ri="${ri}" data-ci="${ci}" data-si="${si}" data-side="${side}">`;
+    const msg = setMessage(s, t.settings);
     sets += `<div class="setrow">
       ${total > 1 ? `<span class="setlab">Set ${si + 1}</span>` : ""}
       ${inp("A", s[0])}<span class="vs">–</span>${inp("B", s[1])}
-    </div>`;
+    </div>${msg ? `<div class="setmsg${msg.warn ? " warn" : ""}">${esc(msg.text)}</div>` : ""}`;
     const sw = setWinner(s, t.settings);
     if (sw === "A") wa += 1;
     else if (sw === "B") wb += 1;

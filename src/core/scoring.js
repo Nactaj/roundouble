@@ -25,10 +25,12 @@ export function describeScoring(settings = {}) {
   return `Sets en ${max} points (2 pts d'écart, max ${cap}) · ${setsTxt}`;
 }
 
-// Vainqueur d'un set : "A" | "B" | null.
-// Un set n'est décidé que lorsque le meneur atteint le score cible (pointsMax) avec au
-// moins 2 points d'écart, ou au plafond (prolongation). Tant que ce n'est pas le cas
-// (score trop bas, égalité, ou 1 seul point d'écart en prolongation), aucun vainqueur.
+// Vainqueur d'un set : "A" | "B" | null. Reproduit l'accessibilité réelle d'un score de
+// badminton (cible `pointsMax`, victoire à 2 points d'écart, plafond en prolongation) :
+//   - fin nette : on atteint exactement la cible, adversaire à 2 points ou plus en dessous ;
+//   - prolongation : au-delà de la cible, victoire à exactement 2 points d'écart (≤ plafond) ;
+//   - plafond : au plafond, victoire à 1 point d'écart.
+// Les scores impossibles (ex. 21-2 en 15 points, 18-3) ne donnent donc aucun vainqueur.
 export function setWinner(set, settings = {}) {
   if (!set) return null;
   const [a, b] = set;
@@ -36,13 +38,48 @@ export function setWinner(set, settings = {}) {
   const x = Number(a);
   const y = Number(b);
   if (Number.isNaN(x) || Number.isNaN(y) || x === y) return null;
-  const max = settings.pointsMax || 21;
+  const target = settings.pointsMax || 21;
   const cap = setCap(settings);
   const hi = Math.max(x, y);
   const lo = Math.min(x, y);
-  if (hi < max) return null; // personne n'a atteint le score cible
-  if (hi - lo < 2 && hi < cap) return null; // prolongation : il faut 2 points d'écart
+  const valid =
+    (hi === target && lo <= target - 2) ||
+    (hi > target && hi <= cap && hi - lo === 2) ||
+    (hi === cap && lo === cap - 1);
+  if (!valid) return null;
   return x > y ? "A" : "B";
+}
+
+// Message explicatif sur l'état d'un set (pourquoi il n'y a pas encore de vainqueur).
+// Renvoie null si le set a un vainqueur ou est totalement vide ; sinon { text, warn }.
+export function setMessage(set, settings = {}) {
+  if (!set) return null;
+  const [a, b] = set;
+  const aEmpty = a == null || a === "";
+  const bEmpty = b == null || b === "";
+  if (aEmpty && bEmpty) return null;
+  if (aEmpty || bEmpty) return { text: "Score incomplet — saisis les deux scores.", warn: false };
+  if (setWinner(set, settings)) return null;
+  const x = Number(a);
+  const y = Number(b);
+  if (Number.isNaN(x) || Number.isNaN(y)) return null;
+  const target = settings.pointsMax || 21;
+  const cap = setCap(settings);
+  const hi = Math.max(x, y);
+  const lo = Math.min(x, y);
+  if (x === y) {
+    return hi >= target - 1
+      ? { text: `Égalité ${x}–${y} : 2 points d'écart pour conclure.`, warn: false }
+      : { text: `Égalité ${x}–${y}, set en cours.`, warn: false };
+  }
+  if (hi < target) return { text: `Set en cours — premier à ${target} (2 points d'écart).`, warn: false };
+  if (hi <= cap && hi - lo === 1) {
+    return { text: `Avantage d'un point : il faut 2 points d'écart (max ${cap}).`, warn: false };
+  }
+  return {
+    text: `Score impossible : à ${target} points le set s'arrête dès 2 points d'écart (max ${cap}).`,
+    warn: true
+  };
 }
 
 // Issue d'un match (terrain) : "A" | "B" | "draw" | null.

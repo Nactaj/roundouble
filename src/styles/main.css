@@ -69,6 +69,8 @@ nav button.quit{flex:0 0 auto;color:#dc2626;font-size:18px;padding:14px 18px;}
 .pchip{flex:1;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#f8fafc;font-size:14px;cursor:pointer;}
 .pchip.on{background:#dbeafe;border-color:var(--blue);color:#1e40af;}
 .draw{margin-top:8px;text-align:center;font-size:13px;font-weight:600;color:var(--mut);}
+.setmsg{font-size:11px;color:var(--mut);margin:2px 0 6px;}
+.setmsg.warn{color:#dc2626;}
 .modes{display:flex;flex-direction:column;gap:8px;}
 .modecard{text-align:left;border:1px solid var(--line);background:#f8fafc;border-radius:10px;padding:10px 12px;}
 .modecard.on{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue) inset;background:#eff6ff;}
